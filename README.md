@@ -1,3 +1,3 @@
-# grayscale-rgb
+# Detection of persons in a campus field.
 
-In this repository we will be converting an RGB image to grayscale by using Computer Vision methods.
+In this repository we will be detecting a person walking in a field by using Computer Vision methods.
