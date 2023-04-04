@@ -138,29 +138,31 @@ while True:
     # Apply the median filter
     frame = cv2.GaussianBlur(frame,(5,5),2)
 
+
     # frame_with_gamma_filter=gau(frame,1.5)
 
 
     # Convert the current frame from BGR to HSV
     frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
+    
     # Apply a threshold to the HSV image
     frame_threshold = cv2.inRange(frame_HSV, (low_H, low_S, low_V), (high_H, high_S, high_V))
 
-    # Convert the current frame from BGR to  
+    # Convert the current frame from BGR to Gray
     framem = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(framem, 175, 255, 0)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+
     
     # Filter out the grassy region from current frame and keep the moving object only
-    bitwise_AND = cv2.bitwise_and(frame, frame, mask=frame_threshold)
+    bitwise_AND = cv2.bitwise_and(frame_HSV, frame_HSV, mask=frame_threshold)
     # cv2.rectangle(bitwise_AND)
 
     # Visualise both the input video and the object detection windows
     cv2.imshow(window_capture_name, frame)
     cv2.imshow(window_detection_name, bitwise_AND)
 
-    #Putting a rectangle around the person
-    # ret, thresh = cv2.threshold(framem, 175, 255, 0)
-    # im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 
     # The program finishes if the key 'q' is pressed
