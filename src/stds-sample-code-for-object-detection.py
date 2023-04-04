@@ -10,6 +10,7 @@
 from __future__ import print_function
 import cv2 
 import argparse
+import numpy as np
 
 
 # ------------------------- Define utility functions ----------------------- #
@@ -55,6 +56,27 @@ def on_high_V_thresh_trackbar(val):
     high_V = max(high_V, low_V+1)
     cv2.setTrackbarPos(high_V_name, window_detection_name, high_V)
 
+def gamma_filter(image, gamma=1.5):
+    # Define the gamma correction lookup table
+    inv_gamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** inv_gamma) * 255
+                      for i in np.arange(0, 256)]).astype('uint8')
+
+    # Apply the lookup table to the image
+    filtered_image = cv2.LUT(image, table)
+
+    # Define the kernel for the gamma filter
+    kernel = np.array([[0, -1, 0],
+                       [-1, 4, -1],
+                       [0, -1, 0]])
+
+    # Apply the gamma filter kernel to the image
+    filtered_image = cv2.filter2D(filtered_image, -1, kernel)
+
+    return filtered_image
+
+
+
 
 # ------------------ Define and initialise variables ---------------------- #
 max_value = 255
@@ -83,6 +105,7 @@ args = parser.parse_args()
 
 # ------------------ Read video sequence file ------------------------------ #
 cap = cv2.VideoCapture(args.video_file)
+# filter=gamma_filter(cap,1.5)
 
 # ------------- Create two new windows for visualisation purposes ---------- #
 cv2.namedWindow(window_capture_name)
@@ -113,7 +136,10 @@ while True:
     frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     # Apply the median filter
-    frame = cv2.medianBlur(frame,5)
+    frame = cv2.GaussianBlur(frame,(5,5),2)
+
+    # frame_with_gamma_filter=gau(frame,1.5)
+
 
     # Convert the current frame from BGR to HSV
     frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -126,10 +152,16 @@ while True:
     
     # Filter out the grassy region from current frame and keep the moving object only
     bitwise_AND = cv2.bitwise_and(frame, frame, mask=frame_threshold)
+    # cv2.rectangle(bitwise_AND)
 
     # Visualise both the input video and the object detection windows
     cv2.imshow(window_capture_name, frame)
     cv2.imshow(window_detection_name, bitwise_AND)
+
+    #Putting a rectangle around the person
+    # ret, thresh = cv2.threshold(framem, 175, 255, 0)
+    # im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
 
     # The program finishes if the key 'q' is pressed
     key = cv2.waitKey(5)
