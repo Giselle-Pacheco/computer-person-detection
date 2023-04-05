@@ -150,14 +150,25 @@ while True:
 
     # Convert the current frame from BGR to Gray
     framem = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(framem, 175, 255, 0)
-    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 
     
     # Filter out the grassy region from current frame and keep the moving object only
-    bitwise_AND = cv2.bitwise_and(frame_HSV, frame_HSV, mask=frame_threshold)
-    # cv2.rectangle(bitwise_AND)
+    # bitwise_AND = cv2.bitwise_and(frame_HSV, frame_HSV, mask=frame_threshold)
+    bitwise_AND = cv2.bitwise_and(frame, frame, mask=frame_threshold)
+    contours, hierarchy = cv2.findContours(frame_threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
+    for contour in contours:
+        area=cv2.contourArea(contour)
+        if area>95 and area<300:
+            cv2.drawContours(bitwise_AND,contours,-1,(0,255,0),3)
+            print(area)
+            
+            # cv2.drawContours(bitwise_AND,contours,-1,(0,255,0),3)
+            # perimeter=cv2.arcLength(contour,True)
+            # polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
+            # x_,y_,w,h=cv2.boundingRect(polynomio)
+            # cv2.rectangle(frame,(x_,y_),(x_+w,y_+h),(0,255,0),5)
 
     # Visualise both the input video and the object detection windows
     cv2.imshow(window_capture_name, frame)
