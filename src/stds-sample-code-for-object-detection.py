@@ -160,15 +160,14 @@ while True:
     
     for contour in contours:
         area=cv2.contourArea(contour)
-        if area>95 and area<300:
-            cv2.drawContours(bitwise_AND,contours,-1,(0,255,0),3)
-            print(area)
-            
+        # if area>85 and area<300:
             # cv2.drawContours(bitwise_AND,contours,-1,(0,255,0),3)
-            # perimeter=cv2.arcLength(contour,True)
-            # polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
-            # x_,y_,w,h=cv2.boundingRect(polynomio)
-            # cv2.rectangle(frame,(x_,y_),(x_+w,y_+h),(0,255,0),5)
+            # print(area)
+        if area>30:   
+            perimeter=cv2.arcLength(contour,True)
+            polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
+            x_,y_,w,h=cv2.boundingRect(polynomio)
+            cv2.rectangle(bitwise_AND,(x_,y_),(x_+w,y_+h),(0,255,0),1)
 
     # Visualise both the input video and the object detection windows
     cv2.imshow(window_capture_name, frame)
