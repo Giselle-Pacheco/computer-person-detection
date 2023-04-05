@@ -61,11 +61,11 @@ def on_high_V_thresh_trackbar(val):
 max_value = 255
 max_value_H = 360//2
 low_H = 75
-low_S = 15
+low_S = 10
 low_V = 0
 high_H = 180
-high_S = 170
-high_V = 160 #max_value
+high_S = 180
+high_V = 150 #max_value
 window_capture_name = 'Input video'
 window_detection_name = 'Object Detection'
 low_H_name = 'Low H'
@@ -139,7 +139,7 @@ while True:
         max_value=np.max(bitwise_AND[:,:,1])
         # print('the max value is ', max_value)
         if max_value>110 and max_value<215:
-            if area>80 and area<330:   
+            if area>55 and area<300:   
                 perimeter=cv2.arcLength(contour,True)
                 polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
                 # print(len(polynomio))
