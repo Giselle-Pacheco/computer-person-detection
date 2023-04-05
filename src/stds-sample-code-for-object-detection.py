@@ -56,37 +56,16 @@ def on_high_V_thresh_trackbar(val):
     high_V = max(high_V, low_V+1)
     cv2.setTrackbarPos(high_V_name, window_detection_name, high_V)
 
-def gamma_filter(image, gamma=1.5):
-    # Define the gamma correction lookup table
-    inv_gamma = 1.0 / gamma
-    table = np.array([((i / 255.0) ** inv_gamma) * 255
-                      for i in np.arange(0, 256)]).astype('uint8')
-
-    # Apply the lookup table to the image
-    filtered_image = cv2.LUT(image, table)
-
-    # Define the kernel for the gamma filter
-    kernel = np.array([[0, -1, 0],
-                       [-1, 4, -1],
-                       [0, -1, 0]])
-
-    # Apply the gamma filter kernel to the image
-    filtered_image = cv2.filter2D(filtered_image, -1, kernel)
-
-    return filtered_image
-
-
-
 
 # ------------------ Define and initialise variables ---------------------- #
 max_value = 255
 max_value_H = 360//2
-low_H = 0
-low_S = 0
-low_V = 0
-high_H = max_value_H
-high_S = max_value
-high_V = max_value
+low_H = 70
+low_S = 5
+low_V = 10
+high_H = 180
+high_S = 185
+high_V = 190 #max_value
 window_capture_name = 'Input video'
 window_detection_name = 'Object Detection'
 low_H_name = 'Low H'
@@ -136,11 +115,9 @@ while True:
     frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     # Apply the median filter
-    frame = cv2.GaussianBlur(frame,(5,5),2)
+    frame=cv2.medianBlur(frame,5)
 
-
-    # frame_with_gamma_filter=gau(frame,1.5)
-
+    # frame = cv2.GaussianBlur(frame,(7,7),1)
 
     # Convert the current frame from BGR to HSV
     frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -151,7 +128,6 @@ while True:
     # Convert the current frame from BGR to Gray
     framem = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-
     
     # Filter out the grassy region from current frame and keep the moving object only
     # bitwise_AND = cv2.bitwise_and(frame_HSV, frame_HSV, mask=frame_threshold)
@@ -160,20 +136,19 @@ while True:
     
     for contour in contours:
         area=cv2.contourArea(contour)
-        # if area>85 and area<300:
-            # cv2.drawContours(bitwise_AND,contours,-1,(0,255,0),3)
-            # print(area)
-        if area>30:   
-            perimeter=cv2.arcLength(contour,True)
-            polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
-            x_,y_,w,h=cv2.boundingRect(polynomio)
-            cv2.rectangle(bitwise_AND,(x_,y_),(x_+w,y_+h),(0,255,0),1)
+        max_value=np.max(bitwise_AND[:,:,1])
+        # print('the max value is ', max_value)
+        if max_value>110 and max_value<215:
+            if area>70 and area<330:   
+                perimeter=cv2.arcLength(contour,True)
+                polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
+                # print(len(polynomio))
+                x_,y_,w,h=cv2.boundingRect(polynomio)
+                cv2.rectangle(bitwise_AND,(x_,y_),(x_+30,y_+30),(0,255,0),1)
 
     # Visualise both the input video and the object detection windows
     cv2.imshow(window_capture_name, frame)
     cv2.imshow(window_detection_name, bitwise_AND)
-
-
 
     # The program finishes if the key 'q' is pressed
     key = cv2.waitKey(5)
