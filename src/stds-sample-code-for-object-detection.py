@@ -115,7 +115,7 @@ while True:
     frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     # Apply the median filter
-    frame=cv2.medianBlur(frame,5)
+    frame=cv2.medianBlur(frame,3)
 
     # frame = cv2.GaussianBlur(frame,(7,7),1)
 
