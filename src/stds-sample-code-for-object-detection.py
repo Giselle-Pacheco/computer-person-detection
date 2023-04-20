@@ -61,11 +61,11 @@ def on_high_V_thresh_trackbar(val):
 max_value = 255
 max_value_H = 360//2
 low_H = 80
-low_S = 10
+low_S = 35
 low_V = 0
-high_H = 175
-high_S = 190
-high_V = 140 #max_value
+high_H = 165
+high_S =250
+high_V =max_value
 window_capture_name = 'Input video'
 window_detection_name = 'Object Detection'
 low_H_name = 'Low H'
@@ -84,11 +84,11 @@ args = parser.parse_args()
 
 # ------------------ Read video sequence file ------------------------------ #
 cap = cv2.VideoCapture(args.video_file)
-# filter=gamma_filter(cap,1.5)
 
 # ------------- Create two new windows for visualisation purposes ---------- #
-cv2.namedWindow(window_capture_name)
-cv2.namedWindow(window_detection_name)
+cv2.namedWindow(window_capture_name, cv2.WINDOW_NORMAL)
+cv2.namedWindow(window_detection_name,cv2.WINDOW_NORMAL)
+
 
 # ------------ Configure trackbars for the low and hight HSV values -------- #
 cv2.createTrackbar(low_H_name, window_detection_name , low_H, max_value_H, on_low_H_thresh_trackbar)
@@ -108,17 +108,17 @@ while True:
     if frame is None:
         break
 
-    # Resize current frame
-    width = int(frame.shape[1] * args.frame_resize_percentage / 100)
-    height = int(frame.shape[0] * args.frame_resize_percentage / 100)
-    dim = (width, height)
-    frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+    
+    # # Resize current frame
+    # width = int(frame.shape[1] * args.frame_resize_percentage / 100)
+    # height = int(frame.shape[0] * args.frame_resize_percentage / 100)
+    # dim = (width, height)
+    # frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     # Apply the median filter
     frame=cv2.medianBlur(frame,3)
 
-    # frame = cv2.GaussianBlur(frame,(7,7),1)
-
+    
     # Convert the current frame from BGR to HSV
     frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
@@ -136,18 +136,20 @@ while True:
     
     for contour in contours:
         area=cv2.contourArea(contour)
+        # print(area)
         max_value=np.max(bitwise_AND[:,:,1])
-        # print('the max value is ', max_value)
-        if max_value>100 and max_value<215:
-            if area>54 and area<320:   
-                perimeter=cv2.arcLength(contour,True)
-                polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
-                # print(len(polynomio))
-                x_,y_,w,h=cv2.boundingRect(polynomio)
-                cv2.rectangle(bitwise_AND,(x_,y_),(x_+30,y_+30),(0,255,0),1)
+        # if max_value>100 and max_value<215:
+        if area>420:   
+            perimeter=cv2.arcLength(contour,True)
+            polynomio=cv2.approxPolyDP(contour,0.02*perimeter,True)
+            # print(len(polynomio))
+            x_,y_,w,h=cv2.boundingRect(polynomio)
+            cv2.rectangle(bitwise_AND,(x_-40,y_-40),(x_+100,y_+100),(0,255,0),1)
 
     # Visualise both the input video and the object detection windows
+    # Create a new window for visualisation purposess
     cv2.imshow(window_capture_name, frame)
+
     cv2.imshow(window_detection_name, bitwise_AND)
 
     # The program finishes if the key 'q' is pressed
