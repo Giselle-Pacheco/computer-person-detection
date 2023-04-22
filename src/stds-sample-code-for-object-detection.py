@@ -194,7 +194,13 @@ def get_magnitude_of_distance(x_list,y_list,z_list):
     
     return magnitude[-1]
 
-
+def get_histogram_of_magnitude(list_of_magnitude):
+    
+    plt.hist(list_of_magnitude,bins=10,label=['Walked distance each frame'])
+    plt.pause(0.1)
+    plt.xlabel('Distance')
+    plt.ylabel('frequency')
+    plt.title('Histogram of distance')
 
 # ------- Main loop --------------- #
 for frames in range(frames_selected_time):
@@ -238,21 +244,34 @@ for frames in range(frames_selected_time):
                     magnitude=(get_magnitude_of_distance(x_list,y_list,z_list))
                     measurements.append(magnitude)
                     accumulated_distance=sum(measurements)
+                    distance_in_plot_3d=fig.text(0,0,accumulated_distance,fontsize=10)
                     plot_pace(measurements,frame_rate_list)
+                    distance_in_plot_3d.remove()
+                    
+
+                        
 
     # Visualise both the input video and the object detection windows
     # Create a new window for visualisation purposes
     cv2.imshow(window_capture_name, frame)
     cv2.imshow(window_detection_name, bitwise_AND)
 
+    
     # The program finishes if the key 'q' is pressed
     key = cv2.waitKey(5)
     if key == ord('q') or key == 27:
         print("Programm finished, mate!")
         break
 
+fig_3 = plt.figure()
+histogram= fig_3.add_subplot(111)
+get_histogram_of_magnitude(measurements)
+
+#subplot to visualise the three plots
+
 # Destroy all visualisation windows
 cv2.destroyAllWindows()
+plt.show()
 
 # Destroy 'VideoCapture' object
 cap.release()
