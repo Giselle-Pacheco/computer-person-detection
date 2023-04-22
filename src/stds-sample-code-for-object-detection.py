@@ -78,7 +78,8 @@ high_H_name = 'High H'
 high_S_name = 'High S'
 high_V_name = 'High V'
 
-#declaring arrays
+#declaring lists
+frame_rate_list=list()
 distance_in_x=list()
 distance_in_y=list()
 distance_in_z=list()
@@ -86,7 +87,7 @@ measurements=list()
 measures_o_center_in_x=list()
 measures_o_center_in_y=list()
 measures_o_center_in_z=list()
-
+measurements.append(0)
 
 # ------------------ Parse data from the command line terminal ------------- #
 parser = argparse.ArgumentParser(description='Vision-based object detection')
@@ -122,6 +123,10 @@ Z=50
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 
+
+fig_2 = plt.figure()
+pace= fig_2.add_subplot(111)
+
 def get_real_coordinates(x_obtained,y_obtained):
         coor_x,coor_y=x_obtained,y_obtained
 
@@ -141,6 +146,13 @@ def plot_x_y_z(x_global,y_global,z_global):
     ax.set_zlabel('Z')
     plt.pause(0.1)
 
+
+def plot_pace(measurements,frames):
+    pace.plot(frames,measurements,marker='o',color='red')
+    pace.set_xlabel('X')
+    pace.set_ylabel('Y')
+    plt.pause(0.1)
+
 def get_acumulated_coordinates(x_global,y_global,z_global):
     x_list.append(x_global)
     y_list.append(y_global)
@@ -155,37 +167,32 @@ def draw_rectangle(contour):
     
     return x_,y_,w,h
 
+def distance_in_x_from_center(x_list):
+    substraction_in_x=x_list[-1]-x_list[-2]
+    measures_o_center_in_x.append(substraction_in_x)
+    return measures_o_center_in_x
 
 
+def distance_in_y_from_center(y_list):
+    substraction_in_y=y_list[-1]-y_list[-2]
+    measures_o_center_in_y.append(substraction_in_y)
+    return measures_o_center_in_y
 
-# def get_distance_between_points(x_list,y_list,z_list):
-#     #Append all the coordinates based on the center in lists x and y separately
-#     distance_in_x=x_list
-#     distance_in_y=y_list
-#     distance_in_z=z_list
 
-#     substraction_iteration=np.arange(0,frames_selected_time-1,-1)
+def distance_in_z_from_center(z_list):
+    substraction_in_z=z_list[-1]-z_list[-2]
+    measures_o_center_in_z.append(substraction_in_z)
+    return measures_o_center_in_z
 
-#     print(substraction_iteration)
-    # if len(distance_in_x)==1:
-    #Create a for loop to  substract the measurements and get the distance   
-        # for j in substraction_iteration:
-        #         # print(len(distance_in_x))
-        #     substraction_in_x=distance_in_x[j]-distance_in_x[j-1]
-        #     measures_o_center_in_x.append(substraction_in_x)
-            
-#         substraction_in_y=distance_in_y[j]-distance_in_y[j-1]
-#         measures_o_center_in_y.append(substraction_in_y)
 
-#         substraction_in_z=distance_in_z[j]-distance_in_z[j-1]
-#         measures_o_center_in_z.append(substraction_in_z)
+def get_magnitude_of_distance(x_list,y_list,z_list):
+    measures_o_center_in_x=distance_in_x_from_center(x_list)
+    measures_o_center_in_y=distance_in_y_from_center(y_list)
+    measures_o_center_in_z=distance_in_z_from_center(z_list)
 
-# #Create a for loop to calculare the magnitude
-#     for h in range(frames_selected_time):
-#         magnitude=np.sqrt(np.square(measures_o_center_in_x[h-1])+np.square(measures_o_center_in_y[h-1]))
-#         measurements.append(magnitude)
+    magnitude=np.sqrt(np.square(measures_o_center_in_x)+np.square(measures_o_center_in_y)+np.square(measures_o_center_in_z))
     
-    # return measures_o_center_in_x
+    return magnitude[-1]
 
 
 
@@ -217,21 +224,21 @@ for frames in range(frames_selected_time):
         max_value=np.max(bitwise_AND[:,:,1])
         if area>420:
             ax.clear
+            pace.clear
             x_,y_,w,h=draw_rectangle(contour)
             cv2.rectangle(bitwise_AND,(x_-40,y_-40),(x_+100,y_+100),(0,255,0),1)
 
             if frames % (30) == 0:
+                frame_rate_list.append(frames)
                 x_global,y_global,z_global=get_real_coordinates(x_,y_)
                 x_list,y_list,z_list=get_acumulated_coordinates(x_global,y_global,z_global)
                 plot_x_y_z(x_list,y_list,z_list)
             
                 if len(x_list)>=2:
-                    #getting the measurement in x
-                    substraction_in_x=x_list[-1]-x_list[-2]
-                    measures_o_center_in_x.append(substraction_in_x)
-                    print(measures_o_center_in_x)
-                
-                
+                    magnitude=(get_magnitude_of_distance(x_list,y_list,z_list))
+                    measurements.append(magnitude)
+                    accumulated_distance=sum(measurements)
+                    plot_pace(measurements,frame_rate_list)
 
     # Visualise both the input video and the object detection windows
     # Create a new window for visualisation purposes
